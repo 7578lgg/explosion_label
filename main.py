@@ -6,6 +6,7 @@ from label_demo import Ui_mainWindow
 
 
 if __name__ == "__main__":
+    print("Hello world")
     app = QApplication(sys.argv)
     widget = QtWidgets.QMainWindow()
     ui = Ui_mainWindow()
