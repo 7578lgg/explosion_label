@@ -65,12 +65,12 @@ class Ui_mainWindow(object):
         self.verticalLayout.setObjectName("verticalLayout")
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
-        self.btn_explode = QtWidgets.QPushButton(self.groupBox)
-        self.btn_explode.setObjectName("btn_explode")
-        self.horizontalLayout.addWidget(self.btn_explode)
         self.btn_safe = QtWidgets.QPushButton(self.groupBox)
         self.btn_safe.setObjectName("btn_safe")
         self.horizontalLayout.addWidget(self.btn_safe)
+        self.btn_explode = QtWidgets.QPushButton(self.groupBox)
+        self.btn_explode.setObjectName("btn_explode")
+        self.horizontalLayout.addWidget(self.btn_explode)
         self.verticalLayout.addLayout(self.horizontalLayout)
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
@@ -100,8 +100,8 @@ class Ui_mainWindow(object):
         QtCore.QMetaObject.connectSlotsByName(mainWindow)
 
         self.btn_open.clicked.connect(self.on_btn_open_clicked)
-        self.btn_explode.clicked.connect(self.on_btn_explode_clicked)
         self.btn_safe.clicked.connect(self.on_btn_safe_clicked)
+        self.btn_explode.clicked.connect(self.on_btn_explode_clicked)
         self.btn_relabel.clicked.connect(self.on_btn_relabel_clicked)
         self.btn_next.clicked.connect(self.on_btn_next_clicked)
 
@@ -110,10 +110,10 @@ class Ui_mainWindow(object):
         mainWindow.setWindowTitle(_translate("mainWindow", "MainWindow"))
         self.label.setText(_translate("mainWindow",
                                       "<html><head/><body><p><span style=\" font-size:12pt; font-weight:600;\">请不要考虑文字内容，只需认真观察图像中有无火焰、浓烟、枪击或其他燃烧、爆炸现象发生，并进行标注，谢谢！</span></p></body></html>"))
-        self.btn_open.setText(_translate("mainWindow", "浏览并选择文件夹"))
+        self.btn_open.setText(_translate("mainWindow", "浏览并选择图像帧文件夹"))
         self.source_imageView.setText(_translate("mainWindow", "显示当前图像"))
-        self.btn_explode.setText(_translate("mainWindow", "标记为有爆炸"))
-        self.btn_safe.setText(_translate("mainWindow", "标记为无爆炸"))
+        self.btn_safe.setText(_translate("mainWindow", "【默认】标记为0：无爆炸"))
+        self.btn_explode.setText(_translate("mainWindow", "标记为1：有爆炸"))
         self.btn_relabel.setText(_translate("mainWindow", "重新标注当前图像"))
         self.btn_next.setText(_translate("mainWindow", "保存并显示下一张"))
         self.textEdit.setHtml(_translate("mainWindow",
@@ -130,9 +130,9 @@ class Ui_mainWindow(object):
 
         # print("进入槽函数")
         current_dir = os.getcwd()
-        print("Current root dir: ", current_dir)
+        # print("Current root dir: ", current_dir)
         quary_dir = QFileDialog.getExistingDirectory(self.centralwidget, "浏览并选择图像文件夹", current_dir)
-        print("Current frame dir: ", quary_dir)
+        # print("Current frame dir: ", quary_dir)
 
         if quary_dir:
             self.open_first = 1
@@ -141,19 +141,21 @@ class Ui_mainWindow(object):
                 quary_dir_name = quary_dir.strip().split('\\')[-1]
             elif '/' in quary_dir:
                 quary_dir_name = quary_dir.strip().split('/')[-1]
-            print("Name of quary_dir: ", quary_dir_name)
+            # print("Name of quary_dir: ", quary_dir_name)
 
-            cur_frames_path = os.path.join(current_dir, quary_dir_name)
+            #cur_frames_path = os.path.join(current_dir, quary_dir_name)
+            cur_frames_path = quary_dir
+
 
             self.frame_path_list = sorted(glob(os.path.join(cur_frames_path, '*.jpg')))
-            print(self.frame_path_list)
+            # print(self.frame_path_list)
             self.frame_name_list = os.listdir(cur_frames_path)
-            print(self.frame_name_list)
+            # print(self.frame_name_list)
 
             self.cur_frame_index = 0
 
             cur_frame_path = self.frame_path_list[self.cur_frame_index]
-            print(cur_frame_path)
+            # print(cur_frame_path)
 
             image = QImage(cur_frame_path)
             # jpg = QtGui.QPixmap(image).scaled(self.source_imageView.width(), self.source_imageView.height())
@@ -162,20 +164,21 @@ class Ui_mainWindow(object):
 
             self.textEdit.setPlainText("已选择图像帧文件夹: " + quary_dir_name)
             self.textEdit.setPlainText("图像帧数量: " + str(len(self.frame_name_list)))
+            self.textEdit.append("当前图像: " + str(self.frame_name_list[self.cur_frame_index]))
             self.textEdit.moveCursor(QTextCursor.End)
-            print("success")
+            # print("success")
             self.open_file = open(quary_dir_name + '.txt', 'w')
             self.textEdit.append("标注结果将被保存到: " + quary_dir_name + ".txt")
             self.textEdit.moveCursor(QTextCursor.End)
-            print("FileName\tLabel", file=self.open_file)
+            # print("FileName\tLabel", file=self.open_file)
             self.alreadylabel = 0
+            self.cur_frame_label = 0
 
     # @pyqtSlot(bool)
     def on_btn_explode_clicked(self, checked):
 
         if self.open_first == 1:
             self.cur_frame_label = 1
-            self.textEdit.append("当前图像: " + str(self.frame_name_list[self.cur_frame_index]))
             self.textEdit.append("即将把当前图像标注为: " + str(self.cur_frame_label))
             self.textEdit.moveCursor(QTextCursor.End)
             self.alreadylabel = 1
@@ -188,7 +191,6 @@ class Ui_mainWindow(object):
 
         if self.open_first == 1:
             self.cur_frame_label = 0
-            self.textEdit.append("当前图像: " + str(self.frame_name_list[self.cur_frame_index]))
             self.textEdit.append("即将把当前图像标注为: " + str(self.cur_frame_label))
             self.textEdit.moveCursor(QTextCursor.End)
             self.alreadylabel = 1
@@ -200,7 +202,8 @@ class Ui_mainWindow(object):
     def on_btn_relabel_clicked(self, checked):
 
         if self.open_first == 1:
-            self.textEdit.append("请重新标注当前图像: " + str(self.frame_name_list[self.cur_frame_index]))
+            self.cur_frame_label = 0
+            self.textEdit.append("已将当前图像标签重置为默认值: " + str(self.cur_frame_label))
             self.textEdit.moveCursor(QTextCursor.End)
             self.alreadylabel = 0
         else:
@@ -216,20 +219,23 @@ class Ui_mainWindow(object):
             if self.alreadylabel == 1:
                 print("%s\t%d" % (self.frame_name_list[self.cur_frame_index], self.cur_frame_label), file=self.open_file)
                 self.textEdit.append("已保存当前图像标注结果")
-                self.textEdit.moveCursor(QTextCursor.End)
-                self.alreadylabel = 0
-                self.cur_frame_index += 1
-                if self.cur_frame_index < len(self.frame_name_list):
-                    cur_frame_path = self.frame_path_list[self.cur_frame_index]
-                    image = QImage(cur_frame_path)
-                    jpg = QtGui.QPixmap(image)
-                    self.source_imageView.setPixmap(jpg)
-                else:
-                    self.open_file.close()
-                    self.textEdit.setPlainText("已完成当前文件夹下图像帧的标注并写入文件，\n请选择下一个未标注的文件夹，谢谢！")
-                    self.textEdit.moveCursor(QTextCursor.End)
-
             else:
-                self.textEdit.append("请先标注当前图像，再选择保存")
-                self.textEdit.moveCursor(QTextCursor.End)
+                self.textEdit.append("默认将当前图像标记为0：无爆炸")
+                print("%s\t%d" % (self.frame_name_list[self.cur_frame_index], self.cur_frame_label), file=self.open_file)
+                self.textEdit.append("已保存当前图像标注结果")
+            self.textEdit.moveCursor(QTextCursor.End)
+            self.alreadylabel = 0
+            self.cur_frame_index += 1
+            self.cur_frame_label = 0
+            if self.cur_frame_index < len(self.frame_name_list):
+                cur_frame_path = self.frame_path_list[self.cur_frame_index]
+                image = QImage(cur_frame_path)
+                jpg = QtGui.QPixmap(image)
+                self.source_imageView.setPixmap(jpg)
+                self.textEdit.append("当前图像: " + str(self.frame_name_list[self.cur_frame_index]))
+            else:
+                self.open_file.close()
+                self.textEdit.setPlainText("已完成当前文件夹下图像帧的标注并写入文件，\n请选择下一个未标注的文件夹，谢谢！")
+            self.textEdit.moveCursor(QTextCursor.End)
+
 
