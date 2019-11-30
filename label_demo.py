@@ -314,7 +314,7 @@ class Ui_mainWindow(object):
                 self.source_imageView.setPixmap(jpg)
                 self.textEdit.append("当前图像: " + str(self.frame_name_list[self.cur_frame_index]))
             else:
-                for i in range(len(self.frame_name_list)):
+                for i in range(self.continue_index, len(self.frame_name_list)):
                     print("%s\t%d" % (self.frame_name_list[i], self.label_result[i,1]), file=self.open_file)
                 
                 self.open_file.close()
